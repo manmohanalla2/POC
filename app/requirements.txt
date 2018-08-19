@@ -1,0 +1,6 @@
+Flask==0.12.2
+flask-restplus==0.10.1
+simplejson==3.15.0
+Flask-WTF==0.14.2
+gunicorn==19.7.1
+pymongo==3.6.1
