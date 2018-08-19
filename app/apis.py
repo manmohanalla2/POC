@@ -22,7 +22,7 @@ app.secret_key = C.SECRET_KEY
 api = Api(app, version='1.0', title='POC',\
     description='API', doc='/', base_url='/api')
 
-ns = api.namespace('api', description='Restful operations')
+ns = api.namespace('', description='Restful operations')
 
 user_data = api.model('json_format',{
     'fullName' : fields.String(description='Full Name'),

@@ -41,7 +41,7 @@ def register():
 		if not result:
 			flash('Error: User with same Email Address Exists. ')
 			return response
-		return redirect('/apis/')
+		return redirect('/')
 
 @app.before_request
 def make_session_permanent():
