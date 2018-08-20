@@ -46,7 +46,7 @@ class DB(object):
 		'''
 		get device Info
 		'''
-		query = {'deviceName': deviceName.lower()}
+		query = {'deviceName': device_name.lower()}
 		result = self.lightform.devices.find_one(query)
 		return result
 
@@ -64,7 +64,7 @@ class DB(object):
 		'''
 		adding user info on db
 		'''
-		default_data = {'deviceName' : device_name, 'userId': transactionId, 'transaction_id': ''}
+		default_data = {'deviceName' : device_name, 'userId': user_id, 'transaction': transaction_id}
 		data = self.device_info(transaction_id, user_id)
 		if not data:
 			return False

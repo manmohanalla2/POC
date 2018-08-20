@@ -4,8 +4,8 @@ import constants as C
 
 from datetime import timedelta
 
-from flask import Flask, redirect, send_from_directory, session, render_template, request, flash, make_response
-from flask_restplus import Api, Resource, fields
+from flask import Flask, redirect, send_from_directory, session, render_template, request, flash, make_response, jsonify
+from flask_restplus import Api, Resource, fields, reqparse
 
 from utils import get_unique_id, logger
 from carpenter import *
@@ -20,7 +20,7 @@ app.secret_key = C.SECRET_KEY
 
 # flask restplus service
 api = Api(app, version='1.0', title='POC',\
-    description='API', doc='/', base_url='/api')
+    description='API', doc='/')
 
 ns = api.namespace('api', description='Restful operations')
 
@@ -36,28 +36,27 @@ user_data = api.model('json_format',{
     'postCode' : fields.String(description='Post Code')
 })
 
-device_data = api.model('json_format',{
-    'device_name': fields.String(required=True, description='device name'),
-    'user_id': fields.String(required=True, description='user name'),
-    'organization': fields.String(required=False, description='organization name')
-})
+device_data = reqparse.RequestParser()
+device_data.add_argument('device_name', required=True, help='device name')
+device_data.add_argument('user_id', required=True, help='user name')
+device_data.add_argument('organization', required=False, help='organization name')
 
-delete_device_data = api.model('json_format',{
-    'device_name': fields.String(required=True, description='device name'),
-    'user_id': fields.String(required=True, description='user name'),
-    'transaction_id': fields.String(required=True, description='Transaction Id')
-})
+delete_device_data = reqparse.RequestParser()
+delete_device_data.add_argument('device_name',required=True, help='device name', location='args')
+delete_device_data.add_argument('user_id',required=True, help='user name', location='args')
+delete_device_data.add_argument('transaction_id',required=True, help='Transaction Id', location='args')
 
 
 @ns.route('/<string:customer_type>/add_device')
 class AddDevice(Resource):
     @ns.doc('Api to Add DEvice')
-    @ns.marshal_with(device_data)
+    @ns.expect(device_data)
     def post(self, customer_type):
         '''
         API to ADD USER
         '''
         logger.info("Made an API POST call on AddDevice")
+        # try:
         args = api.payload
         device_name = args.get('device_name')
         organization = args.get('organization')
@@ -71,74 +70,73 @@ class AddDevice(Resource):
         device_info = get_device_info(device_name=device_name)
         if not device_info:
             raise Exception('Device Not Found')
-        try:
-            if user_id:
-                result = add_device(device_name=device_name, organization=organization,\
-                                    user_id=user_id, transaction_id=transaction_id)
-            if result:
-                logger.info("API POST call responded on AddDevice")
-                return {'status': 'success'}, 201
-            raise Exception('Device Not added')
-        except Exception as e:
-            logger.error("Failed to return AddDevice - {e}".format( e=e))
-            return {'status': 'fail'}, 200
+        if user_id:
+            result = add_device(device_name=device_name, organization=organization,\
+                                user_id=user_id, transaction_id=transaction_id)
+        if result:
+            logger.info("API POST call responded on AddDevice")
+            return jsonify({'status': 'success'})
+        raise Exception('Device Not added')
+        # except Exception as e:
+        #     logger.error("Failed to return AddDevice - {e}".format( e=e))
+        #     return jsonify({'status': 'fail'})
 
 @ns.route('/delete_device')
 class DeleteDevice(Resource):
     @ns.doc('Api to Add DEvice')
-    @ns.marshal_with(delete_device_data)
+    @ns.expect(delete_device_data)
     def delete(self):
         '''
         API to delete USER
         '''
         logger.info("Made an API POST call on DeleteDevice")
-        args = param_parser.parse_args()
-        param = args.get('device_name')
-        transaction_id = args.get('transaction_id')
-        user_id = args.get('user_id')
         try:
+            args = api.payload
+            device_name = args.get('device_name')
+            transaction_id = args.get('transaction_id')
+            user_id = args.get('user_id')
             if user_id:
                 result = delete_device_user(user_id=user_id, device_name=device_name, transaction_id=transaction_id)
             if result:
                 logger.info("API POST call responded on DeleteDevice")
-                return {'status': 'success'}, 201
+                return jsonify({'status': 'success'})
             raise Exception('Failed to Delete a Device')
         except Exception as e:
             logger.error("Failed to return DeleteDevice - {e}".format( e=e))
-            return {'status': 'fail', 'message': e}, 200
+            return jsonify({'status': 'fail'})
 
 
 @ns.route('/add_user')
 class AddUser(Resource):
     @ns.doc('Api to Add User')
-    @ns.marshal_with(user_data)
+    @ns.expect(user_data)
     def post(self):
         '''
         API to add USER
         '''
         logger.info("Made an API POST call on AddUser")
-        args = api.payload
-        fullName = args.get('fullName')
-        userId = get_unique_id()
-        emailAddress = args.get('emailAddress')
-        companyName = args.get('companyName')
-        phoneNumber = args.get('phoneNumber')
-        country = args.get('country')
-        address = args.get('address')
-        city = args.get('city')
-        state = args.get('state')
-        postCode = args.get('postCode')
         try:
-            result = add_user(fullName=fullName, userId=userId, emailAddress=emailAddress,\
+            args = api.payload
+            fullName = args.get('fullName')
+            userId = get_unique_id()
+            emailAddress = args.get('emailAddress')
+            companyName = args.get('companyName')
+            phoneNumber = args.get('phoneNumber')
+            country = args.get('country')
+            address = args.get('address')
+            city = args.get('city')
+            state = args.get('state')
+            postCode = args.get('postCode')
+            result = add_user(fullName=fullName, user_id=userId, emailAddress=emailAddress,\
                             companyName=companyName, phoneNumber=phoneNumber, country=country,\
                             address=address, city=city, state=state, postCode=postCode)
             if result:
                 logger.info("API POST call responded on AddUser")
-                return {'status': 'success'}, 201
+                return jsonify({'status': 'success'})
             raise Exception('User Already Exists')
         except Exception as e:
             logger.error("Failed to return AddUser - {e}".format( e=e))
-            return {'status': 'fail', 'message': e}, 200
+            return jsonify({'status': 'fail'})
 
 if __name__ == '__main__':
   app.run(debug=True, host='0.0.0.0',

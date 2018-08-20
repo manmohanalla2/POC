@@ -26,17 +26,17 @@ def add_user(db, **form_args):
 
 
 @get_db_connection
-def add_device(device_name, user_id, transaction_id, organization=None):
+def add_device(device_name, user_id, transaction_id, organization=None, db=None):
     '''
     adding device
     '''
 
-    result = db.add_device(deviceName=device_name, userId=userId, transaction_id=transaction_id, companyName=organization)
+    result = db.add_device(deviceName=device_name, userId=user_id, transaction=transaction_id, companyName=organization)
     return result
 
 
 @get_db_connection
-def delete_device_user(user_id, device_name, transaction_id):
+def delete_device_user(user_id, device_name, transaction_id, db=None):
     '''
     delete device
     '''
@@ -44,7 +44,7 @@ def delete_device_user(user_id, device_name, transaction_id):
     return result
 
 @get_db_connection
-def get_device_info(device_name):
+def get_device_info(device_name, db=None):
     '''
     get device Info
     '''
@@ -54,7 +54,7 @@ def get_device_info(device_name):
 
 
 @get_db_connection
-def get_organisations(device_name):
+def get_organisations(device_name, db=None):
     '''
     get device Info
     '''
