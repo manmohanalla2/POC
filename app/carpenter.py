@@ -1,4 +1,3 @@
-
 from db_collections import DB
 
 from functools import wraps
@@ -30,7 +29,9 @@ def add_device(device_name, user_id, transaction_id, organization=None, db=None)
     '''
     adding device
     '''
-
+    result = db.get_user_info(user_id=user_id)
+    if not result:
+        return False
     result = db.add_device(deviceName=device_name, userId=user_id, transaction=transaction_id, companyName=organization)
     return result
 
