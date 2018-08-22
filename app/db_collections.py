@@ -25,11 +25,14 @@ class DB(object):
 		return True
 
 
-	def get_user_info(self, email_address):
+	def get_user_info(self, email_address=None, user_id=None):
 		'''
 		adding user info on db
 		'''
-		query = {'emailAddress': email_address}
+		if user_id:
+			query = {'userId': user_id}
+		if email_address:
+			query = {'emailAddress': email_address}
 		result = self.lightform.users.find_one(query)
 		return result
 
@@ -38,7 +41,7 @@ class DB(object):
 		'''
 		adding user info on db
 		'''
-		self.lightform.devices.insert_one(data)
+		self.lightform.transactions.insert_one(data)
 		return True
 
 
@@ -64,7 +67,7 @@ class DB(object):
 		'''
 		adding user info on db
 		'''
-		default_data = {'deviceName' : device_name, 'userId': user_id, 'transaction': transaction_id}
+		default_data = {'deviceName' : device_name, 'userId': transactionId, 'transaction_id': ''}
 		data = self.device_info(transaction_id, user_id)
 		if not data:
 			return False
